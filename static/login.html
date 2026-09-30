@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>supra</title>
+<style>
+  body { margin: 0; height: 100vh; display: grid; place-items: center; background: #323437; color: #d1d0c5; font: 15px ui-monospace, monospace; }
+  input, button { font: inherit; background: #2c2e31; color: inherit; border: 0; padding: 8px 12px; border-radius: 6px; }
+  p { color: #ca4754; }
+</style>
+</head>
+<body>
+<form method="post" action="/login">
+  <input type="password" name="password" placeholder="senha" autofocus>
+  <button>entrar</button>
+  <p id="erro"></p>
+</form>
+<script>if (location.search == "?erro") erro.textContent = "senha errada"</script>
+</body>
+</html>

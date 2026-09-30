@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>supra</title>
+<style>
+  :root { --bg: #323437; --bg2: #2c2e31; --gray: #646669; --text: #d1d0c5; --err: #ca4754; --caret: #e2b714; }
+  body { margin: 0; height: 100vh; display: flex; background: var(--bg); color: var(--text); font: 15px/1.6 ui-monospace, monospace; }
+  button { background: none; border: 0; color: var(--gray); font: inherit; cursor: pointer; }
+  button:hover { color: var(--text); }
+
+  #side { width: 260px; flex-shrink: 0; background: var(--bg2); padding: 12px; overflow: auto; }
+  #tree div { display: flex; gap: 4px; white-space: nowrap; cursor: pointer; border-radius: 4px; padding-right: 4px; }
+  #tree .dir { color: var(--gray); }
+  #tree .open { color: var(--caret); }
+  #side.focus .sel { background: var(--bg); box-shadow: -2px 0 0 var(--caret); }
+  #tree button { visibility: hidden; margin-left: auto; }
+  #tree div:hover button { visibility: visible; }
+
+  main { flex: 1; overflow: auto; }
+  #bar { position: fixed; top: 8px; right: 16px; color: var(--gray); }
+  #remind { margin: 0; padding: 32px; white-space: pre-wrap; color: var(--gray); font: inherit; }
+  #remind .ok { color: var(--text); }
+  #remind .err { color: var(--err); }
+  #remind .cur { box-shadow: -2px 0 0 var(--caret); }
+  #editor { height: 100%; }
+
+  body.home #side, body.closed #side { width: 100%; }
+  body.home main, body.closed main { display: none; }
+  body.edit #remind, body:not(.edit) #editor { display: none; }
+</style>
+</head>
+<body>
+<nav id="side">
+  <button id="new">+ novo</button>
+  <form method="post" action="/logout" style="display: inline"><button>sair</button></form>
+  <div id="tree"></div>
+</nav>
+<main>
+  <div id="bar"><span id="mode"></span></div>
+  <pre id="remind"></pre>
+  <div id="editor"></div>
+</main>
+
+<script type="module">
+import { EditorView, basicSetup } from "https://esm.sh/codemirror@6.0.1"
+import { vim, Vim } from "https://esm.sh/@replit/codemirror-vim@6.4.0"
+
+// ctrl + tecla -> ação (fácil de trocar aqui)
+const CTRL = {
+  e: () => view && setMode(!document.body.classList.contains("edit")),
+  b: () => { document.body.classList.toggle("closed"); focusPanel() },
+  o: () => create(),
+  j: () => move(1),
+  k: () => move(-1),
+  Delete: () => remove(sel),
+}
+// teclas sem ctrl quando o foco está no painel
+const PANEL = {
+  Enter: () => enter(),
+  n: () => create(),
+  r: () => rename(sel),
+  d: () => remove(sel),
+}
+
+const path = decodeURIComponent(location.pathname.slice(1))
+const $ = s => document.querySelector(s)
+let view, setMode  // editor e troca de modo (só existem com arquivo aberto)
+let focus = "panel" // "panel" ou "file"
+
+async function api(url, opt) {
+  const r = await fetch(url, opt)
+  if (r.status == 401) location = "/login"
+  if (!r.ok) throw alert("erro: " + await r.text())
+  return r
+}
+
+addEventListener("keydown", e => {
+  if (e.ctrlKey && CTRL[e.key]) CTRL[e.key]()
+  else if (!e.ctrlKey && focus == "panel" && PANEL[e.key]) PANEL[e.key]()
+  else return
+  e.preventDefault()
+  e.stopPropagation()
+}, true)
+
+// ---------- painel ----------
+
+let items = []  // lista plana do back; pasta termina com "/"
+let sel = path  // item selecionado no painel
+let opened      // pastas abertas (fica salvo no navegador)
+try { opened = new Set(JSON.parse(localStorage.opened)) } catch { opened = new Set() }
+
+// "a/b/c.txt" -> ["a/", "a/b/"]
+const parents = p => p.split("/").filter(Boolean).slice(0, -1).map((_, i, a) => a.slice(0, i + 1).join("/") + "/")
+const visible = () => items.filter(p => parents(p).every(d => opened.has(d)))
+parents(path).forEach(d => opened.add(d))
+
+function saveOpened() {
+  try { localStorage.opened = JSON.stringify([...opened]) } catch {}
+}
+
+async function load() {
+  items = await api("/api/tree").then(r => r.json())
+  if (!items.includes(sel)) sel = visible()[0]
+  render()
+}
+
+function render() {
+  $("#side").classList.toggle("focus", focus == "panel")
+  $("#tree").replaceChildren(...visible().map(p => {
+    const dir = p.endsWith("/")
+    const parts = p.split("/").filter(Boolean)
+    const row = document.createElement("div")
+    row.textContent = (dir ? (opened.has(p) ? "▾ " : "▸ ") : "  ") + parts.at(-1)
+    row.style.paddingLeft = (parts.length - 1) * 16 + "px"
+    row.classList.toggle("dir", dir)
+    row.classList.toggle("open", p == path)
+    row.classList.toggle("sel", p == sel)
+    row.onclick = () => { sel = p; focusPanel(); enter() }
+    row.append(button("✎", () => rename(p)), button("✕", () => remove(p)))
+    return row
+  }))
+  $("#tree .sel")?.scrollIntoView({ block: "nearest" })
+}
+
+function button(label, onclick) {
+  const b = document.createElement("button")
+  b.textContent = label
+  b.onclick = e => { e.stopPropagation(); onclick() }
+  return b
+}
+
+function focusPanel() {
+  focus = "panel"
+  document.activeElement.blur()
+  render()
+}
+
+function focusFile() {
+  if (!view) return
+  focus = "file"
+  document.body.classList.remove("closed")
+  if (document.body.classList.contains("edit")) view.focus()
+  render()
+}
+
+function move(d) {
+  const v = visible()
+  sel = v[Math.min(Math.max(v.indexOf(sel) + d, 0), v.length - 1)]
+  focusPanel()
+}
+
+// pasta: abre/fecha. arquivo: abre na área do arquivo
+function enter() {
+  if (!sel) return
+  if (sel.endsWith("/")) {
+    opened.has(sel) ? opened.delete(sel) : opened.add(sel)
+    saveOpened()
+    render()
+  }
+  else if (sel == path) focusFile()
+  else location = "/" + encodeURI(sel)
+}
+
+const fs = body => api("/api/fs", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) })
+
+async function create() {
+  const here = sel?.endsWith("/") ? sel : parents(sel ?? "").at(-1) ?? ""
+  const p = prompt("nome (termina com / para pasta)", here)
+  if (!p) return
+  await fs({ action: "new", path: p })
+  parents(p).forEach(d => opened.add(d))
+  saveOpened()
+  if (!p.endsWith("/")) location = "/" + encodeURI(p)  // arquivo novo já abre
+  sel = p
+  load()
+}
+
+async function rename(p) {
+  const to = prompt("novo caminho", p)
+  if (!to || to == p) return
+  await fs({ action: "mv", path: p, to })
+  if (p == path) location = "/" + encodeURI(to)
+  sel = to
+  load()
+}
+
+async function remove(p) {
+  if (!confirm(`apagar ${p}?`)) return
+  await fs({ action: "rm", path: p })
+  if (p == path || path.startsWith(p)) location = "/"
+  load()
+}
+
+$("#new").onclick = create
+$("main").onmousedown = focusFile
+
+// ---------- arquivo ----------
+
+if (!path) document.body.classList.add("home")
+else {
+  const url = "/api/file?path=" + encodeURIComponent(path)
+  let saved = await api(url).then(r => r.text())
+  focus = "file"
+
+  view = new EditorView({
+    doc: saved,
+    parent: $("#editor"),
+    extensions: [vim(), basicSetup, EditorView.theme({
+      "&": { height: "100%", color: "var(--text)", backgroundColor: "var(--bg)" },
+      ".cm-scroller": { fontFamily: "inherit" },
+      ".cm-gutters": { backgroundColor: "var(--bg)", color: "var(--gray)", border: "none" },
+      ".cm-activeLine, .cm-activeLineGutter": { backgroundColor: "var(--bg2)" },
+      ".cm-fat-cursor": { background: "var(--caret) !important", color: "var(--bg) !important" },
+    }, { dark: true })],
+  })
+
+  function save() {
+    const text = view.state.doc.toString()
+    if (text != saved) api(url, { method: "PUT", body: text, keepalive: true }).then(() => saved = text)
+  }
+  Vim.defineEx("write", "w", save)
+  addEventListener("beforeunload", save)
+
+  setMode = edit => {
+    document.body.classList.toggle("edit", edit)
+    $("#mode").textContent = edit ? "edição" : "reminder"
+    if (!edit) { save(); remind(view.state.doc.toString()) }
+    focusFile()
+  }
+
+  // ---------- modo reminder ----------
+  // chars = só os caracteres visíveis; starts = índice do 1º visível de cada linha
+  let chars = [], starts = [], pos = 0
+
+  function remind(text) {
+    chars = []; starts = []; pos = 0
+    let newLine = true
+    $("#remind").replaceChildren(...Array.from(text, c => {
+      if (/\s/.test(c)) {
+        if (c == "\n") newLine = true
+        return c
+      }
+      if (newLine) starts.push(chars.length), newLine = false
+      const s = document.createElement("span")
+      s.textContent = c
+      chars.push(s)
+      return s
+    }))
+    caret()
+  }
+
+  function caret() {
+    $("#remind .cur")?.classList.remove("cur")
+    chars[pos]?.classList.add("cur")
+    chars[pos]?.scrollIntoView({ block: "nearest" })
+  }
+
+  addEventListener("keydown", e => {
+    if (focus != "file" || document.body.classList.contains("edit") || e.ctrlKey || e.metaKey || e.altKey) return
+    const line = starts.findLastIndex(s => s <= pos)
+    if (e.key == "Backspace") { if (pos > 0) chars[--pos].className = "" }
+    else if (e.key == "ArrowUp") pos = starts[Math.max(line - 1, 0)] ?? 0
+    else if (e.key == "ArrowDown") pos = starts[line + 1] ?? pos
+    else if (e.key.length == 1) {
+      if (e.key != " " && pos < chars.length) chars[pos].className = e.key == chars[pos].textContent ? "ok" : "err", pos++
+    }
+    else return
+    e.preventDefault()
+    caret()
+  })
+
+  setMode(!saved) // arquivo vazio abre em edição
+}
+
+load()
+</script>
+</body>
+</html>
