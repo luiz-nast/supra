@@ -1,0 +1,75 @@
+Get-Location
+Get-ChildItem
+Get-ChildItem -Force
+Get-ChildItem -Recurse -Filter *.py
+Set-Location ~
+Set-Location ..
+New-Item -ItemType Directory -Path a\b\c
+New-Item file.txt
+Copy-Item file.txt copy.txt
+Copy-Item dir dir2 -Recurse
+Move-Item old.txt new.txt
+Rename-Item old.txt new.txt
+Remove-Item file.txt
+Remove-Item dir -Recurse -Force
+Get-Content file.txt
+Get-Content file.txt -Head 20
+Get-Content file.txt -Tail 20
+Get-Content app.log -Wait
+(Get-Content file.txt).Count
+Select-String -Path *.txt -Pattern "text"
+Get-ChildItem -Recurse | Select-String "text"
+(Get-Content file.txt) -replace 'old','new' | Set-Content file.txt
+Compare-Object (Get-Content a.txt) (Get-Content b.txt)
+"text" | Out-File file.txt
+"text" | Add-Content file.txt
+Set-Content file.txt "text"
+Get-Content file.txt | Sort-Object | Get-Unique
+Get-History
+Get-Command python
+Get-Help Get-ChildItem -Examples
+$env:USERNAME
+whoami
+Get-ComputerInfo
+Get-PSDrive
+Get-Process
+Get-Process python
+Stop-Process -Name python -Force
+Stop-Process -Id 1234
+Start-Process notepad
+Start-Process powershell -Verb RunAs
+Get-Service
+Restart-Service -Name Spooler
+Get-NetIPAddress
+ipconfig /all
+Get-NetTCPConnection -State Listen
+Test-Connection google.com -Count 4
+Test-NetConnection google.com -Port 443
+Invoke-WebRequest https://example.com
+Invoke-WebRequest https://example.com/file.zip -OutFile file.zip
+Invoke-RestMethod https://api.github.com
+ssh user@host
+ssh-keygen -t ed25519
+scp file.txt user@host:~/
+Compress-Archive dir out.zip
+Expand-Archive out.zip -DestinationPath dir
+$env:VAR = "value"
+$env:Path -split ';'
+[Environment]::SetEnvironmentVariable("VAR", "value", "User")
+Set-Alias ll Get-ChildItem
+notepad $PROFILE
+. $PROFILE
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+Get-ExecutionPolicy
+winget search git
+winget install Git.Git
+winget upgrade --all
+git status
+git add .
+git commit -m "msg"
+git push
+git pull
+docker ps
+docker compose up -d --build
+Clear-Host
+exit

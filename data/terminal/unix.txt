@@ -1,0 +1,91 @@
+pwd
+ls -la
+ls -lh
+cd ~
+cd -
+cd ..
+mkdir -p a/b/c
+touch file.txt
+cp file.txt copy.txt
+cp -r dir/ dir2/
+mv old.txt new.txt
+rm file.txt
+rm -rf dir/
+ln -s /path/target link
+cat file.txt
+less file.txt
+head -n 20 file.txt
+tail -n 20 file.txt
+tail -f app.log
+wc -l file.txt
+grep -rn "text" .
+grep -i "text" file.txt
+find . -name "*.py"
+find . -type f -mtime -1
+sed -i 's/old/new/g' file.txt
+awk '{print $1}' file.txt
+sort file.txt | uniq -c
+cut -d: -f1 /etc/passwd
+diff a.txt b.txt
+echo "text" > file.txt
+echo "text" >> file.txt
+cmd 2>&1 | tee out.log
+history | grep ssh
+chmod +x script.sh
+chmod 644 file.txt
+chown user:group file.txt
+sudo !!
+whoami
+id
+uname -a
+df -h
+du -sh *
+free -h
+top
+htop
+ps aux | grep python
+kill -9 1234
+pkill -f python
+jobs
+bg
+fg
+nohup cmd &
+uptime
+ip a
+ss -tlnp
+ping -c 4 google.com
+curl -I https://example.com
+curl -s https://example.com | head
+wget https://example.com/file.zip
+ssh user@host
+ssh-keygen -t ed25519
+scp file.txt user@host:~/
+rsync -avz dir/ user@host:~/dir/
+tar -czvf backup.tar.gz dir/
+tar -xzvf backup.tar.gz
+zip -r out.zip dir/
+unzip out.zip
+export VAR=value
+echo $PATH
+env | grep VAR
+source ~/.bashrc
+alias ll='ls -la'
+which python3
+crontab -e
+systemctl status nginx
+systemctl restart nginx
+journalctl -u nginx -f
+apt update && apt upgrade -y
+apk add git
+git status
+git add .
+git commit -m "msg"
+git push
+git pull
+git log --oneline
+docker ps
+docker compose up -d --build
+docker compose logs -f
+docker exec -it container sh
+clear
+exit

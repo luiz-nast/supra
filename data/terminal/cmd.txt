@@ -1,0 +1,35 @@
+pwd
+ls
+cd ~
+cd ..
+mkdir dir
+cat file.txt
+cp file.txt copy.txt
+mv old.txt new.txt
+rm file.txt
+echo "text"
+echo "text" > file.txt
+echo "text" >> file.txt
+clear
+history
+whoami
+ps
+kill 1234
+curl https://example.com
+ssh user@host
+ssh-keygen -t ed25519
+scp file.txt user@host:~/
+tar -czf backup.tar.gz dir
+tar -xzf backup.tar.gz
+git status
+git add .
+git commit -m "msg"
+git push
+git pull
+git log --oneline
+docker ps
+docker compose up -d --build
+docker compose logs -f
+docker exec -it container sh
+code .
+exit

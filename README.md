@@ -51,7 +51,7 @@ supra/
 ├── static/
 │   ├── index.html      # painel + editor + modo reminder (HTML/CSS/JS puro)
 │   └── login.html
-├── data/               # os arquivos do usuário (volume, fora do git)
+├── data/               # os arquivos do usuário (volume, versionado no git)
 ├── Dockerfile          # imagem uv + python 3.13 alpine
 ├── compose.yaml        # publica só em 127.0.0.1:8083
 ├── pyproject.toml / uv.lock
@@ -83,7 +83,6 @@ Pré-requisitos no servidor: Docker com o plugin compose e o Caddy rodando no ho
 git clone https://github.com/luiz-nast/supra.git
 cd supra
 cp .env.example .env        # defina SUPRA_PASSWORD e um SUPRA_SECRET aleatório
-mkdir -p data
 docker compose up -d --build
 ```
 
@@ -112,7 +111,7 @@ DNS: registro **A** `supra` apontando para o IP do servidor.
 - [ ] `curl -I http://127.0.0.1:8083/` responde `307` para `/login`
 - [ ] `https://supra.premiumlts.com.br` abre com HTTPS válido
 - [ ] login funciona com a senha do `.env`
-- [ ] conteúdo antigo restaurado em `data/` (se houver backup)
+- [ ] `data/` veio junto no clone com todos os arquivos
 
 ## 🔧 Manutenção
 
@@ -121,7 +120,7 @@ DNS: registro **A** `supra` apontando para o IP do servidor.
 | mudou código ou `static/` | `docker compose up -d --build` |
 | mudou o `.env` | `docker compose up -d` (**não** use `restart`: ele não relê o `.env`) |
 | logs | `docker compose logs -f` |
-| backup do conteúdo | copiar a pasta `data/` |
+| backup do conteúdo | `git add data && git commit -m "data" && git push` |
 
 ## 🎨 Cores
 
