@@ -274,8 +274,8 @@ else {
     }
     else if (e.key == "ArrowUp") pos = starts[Math.max(line - 1, 0)] ?? 0
     else if (e.key == "ArrowDown" || e.key == "Enter") pos = starts[line + 1] ?? pos
-    else if (e.key == "ArrowLeft") pos = e.ctrlKey ? starts[Math.max(line - 1, 0)] ?? 0 : Math.max(pos - 1, 0)  // ctrl pula linha
-    else if (e.key == "ArrowRight") pos = e.ctrlKey ? starts[line + 1] ?? pos : Math.min(pos + 1, chars.length)
+    else if (e.key == "ArrowLeft") pos = e.ctrlKey ? words.findLast(w => w < pos) ?? 0 : Math.max(pos - 1, 0)  // ctrl pula palavra
+    else if (e.key == "ArrowRight") pos = e.ctrlKey ? words.find(w => w > pos) ?? chars.length : Math.min(pos + 1, chars.length)
     else return
     e.preventDefault()
     caret()
