@@ -25,6 +25,7 @@
   #remind .err { color: var(--err); }
   #remind .cur { box-shadow: -2px 0 0 var(--caret); }
   #editor { height: 100%; }
+  #input { position: fixed; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 
   body.home #side, body.closed #side { width: 100%; }
   body.home main, body.closed main { display: none; }
@@ -40,6 +41,7 @@
 <main>
   <div id="bar"><span id="mode"></span></div>
   <pre id="remind"></pre>
+  <textarea id="input" autocomplete="off" autocapitalize="off" spellcheck="false"></textarea>
   <div id="editor"></div>
 </main>
 
@@ -142,6 +144,7 @@ function focusFile() {
   focus = "file"
   document.body.classList.remove("closed")
   if (document.body.classList.contains("edit")) view.focus()
+  else $("#input").focus()  // o reminder lê o que é digitado num textarea escondido
   render()
 }
 
@@ -194,7 +197,10 @@ async function remove(p) {
 }
 
 $("#new").onclick = create
-$("main").onmousedown = focusFile
+$("main").onmousedown = e => {
+  if (!document.body.classList.contains("edit")) e.preventDefault()  // não tira o foco do textarea
+  focusFile()
+}
 
 // ---------- arquivo ----------
 
@@ -237,7 +243,7 @@ else {
   function remind(text) {
     chars = []; starts = []; pos = 0
     let newLine = true
-    $("#remind").replaceChildren(...Array.from(text, c => {
+    $("#remind").replaceChildren(...Array.from(text.normalize(), c => {
       if (/\s/.test(c)) {
         if (c == "\n") newLine = true
         return c
@@ -263,13 +269,24 @@ else {
     if (e.key == "Backspace") { if (pos > 0) chars[--pos].className = "" }
     else if (e.key == "ArrowUp") pos = starts[Math.max(line - 1, 0)] ?? 0
     else if (e.key == "ArrowDown") pos = starts[line + 1] ?? pos
-    else if (e.key.length == 1) {
-      if (e.key != " " && pos < chars.length) chars[pos].className = e.key == chars[pos].textContent ? "ok" : "err", pos++
-    }
     else return
     e.preventDefault()
     caret()
   })
+
+  // letras chegam pelo textarea, assim acento (´ + a = á) já vem montado
+  const input = $("#input")
+  function typed() {
+    for (const c of input.value.normalize()) {
+      if (/\s/.test(c) || pos >= chars.length) continue
+      chars[pos].className = c == chars[pos].textContent ? "ok" : "err"
+      pos++
+    }
+    input.value = ""
+    caret()
+  }
+  input.addEventListener("input", e => e.isComposing || typed())
+  input.addEventListener("compositionend", typed)
 
   setMode(!saved) // arquivo vazio abre em edição
 }
