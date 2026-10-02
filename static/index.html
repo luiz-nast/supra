@@ -268,7 +268,7 @@ else {
     const line = starts.findLastIndex(s => s <= pos)
     if (e.key == "Backspace") { if (pos > 0) chars[--pos].className = "" }
     else if (e.key == "ArrowUp") pos = starts[Math.max(line - 1, 0)] ?? 0
-    else if (e.key == "ArrowDown") pos = starts[line + 1] ?? pos
+    else if (e.key == "ArrowDown" || e.key == "Enter") pos = starts[line + 1] ?? pos
     else return
     e.preventDefault()
     caret()
