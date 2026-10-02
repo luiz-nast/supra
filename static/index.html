@@ -279,7 +279,7 @@ else {
   function typed() {
     for (const c of input.value.normalize()) {
       if (/\s/.test(c) || pos >= chars.length) continue
-      chars[pos].className = c == chars[pos].textContent ? "ok" : "err"
+      chars[pos].className = c.toLowerCase() == chars[pos].textContent.toLowerCase() ? "ok" : "err"  // maiúscula = minúscula
       pos++
     }
     input.value = ""
