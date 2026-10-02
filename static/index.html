@@ -237,18 +237,20 @@ else {
   }
 
   // ---------- modo reminder ----------
-  // chars = só os caracteres visíveis; starts = índice do 1º visível de cada linha
-  let chars = [], starts = [], pos = 0
+  // chars = só os caracteres visíveis; starts = índice do 1º visível de cada linha; words = de cada palavra
+  let chars = [], starts = [], words = [], pos = 0
 
   function remind(text) {
-    chars = []; starts = []; pos = 0
-    let newLine = true
+    chars = []; starts = []; words = []; pos = 0
+    let newLine = true, newWord = true
     $("#remind").replaceChildren(...Array.from(text.normalize(), c => {
       if (/\s/.test(c)) {
         if (c == "\n") newLine = true
+        newWord = true
         return c
       }
       if (newLine) starts.push(chars.length), newLine = false
+      if (newWord) words.push(chars.length), newWord = false
       const s = document.createElement("span")
       s.textContent = c
       chars.push(s)
@@ -264,9 +266,12 @@ else {
   }
 
   addEventListener("keydown", e => {
-    if (focus != "file" || document.body.classList.contains("edit") || e.ctrlKey || e.metaKey || e.altKey) return
+    if (focus != "file" || document.body.classList.contains("edit") || (e.ctrlKey && e.key != "Backspace") || e.metaKey || e.altKey) return
     const line = starts.findLastIndex(s => s <= pos)
-    if (e.key == "Backspace") { if (pos > 0) chars[--pos].className = "" }
+    if (e.key == "Backspace") {  // com ctrl volta pro começo da palavra
+      const to = e.ctrlKey ? words.findLast(w => w < pos) ?? 0 : Math.max(pos - 1, 0)
+      while (pos > to) chars[--pos].className = ""
+    }
     else if (e.key == "ArrowUp") pos = starts[Math.max(line - 1, 0)] ?? 0
     else if (e.key == "ArrowDown" || e.key == "Enter") pos = starts[line + 1] ?? pos
     else return
