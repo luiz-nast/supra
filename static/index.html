@@ -266,7 +266,7 @@ else {
   }
 
   addEventListener("keydown", e => {
-    if (focus != "file" || document.body.classList.contains("edit") || (e.ctrlKey && e.key != "Backspace") || e.metaKey || e.altKey) return
+    if (focus != "file" || document.body.classList.contains("edit") || (e.ctrlKey && !["Backspace", "ArrowLeft", "ArrowRight"].includes(e.key)) || e.metaKey || e.altKey) return
     const line = starts.findLastIndex(s => s <= pos)
     if (e.key == "Backspace") {  // com ctrl volta pro começo da palavra
       const to = e.ctrlKey ? words.findLast(w => w < pos) ?? 0 : Math.max(pos - 1, 0)
@@ -274,6 +274,8 @@ else {
     }
     else if (e.key == "ArrowUp") pos = starts[Math.max(line - 1, 0)] ?? 0
     else if (e.key == "ArrowDown" || e.key == "Enter") pos = starts[line + 1] ?? pos
+    else if (e.key == "ArrowLeft") pos = e.ctrlKey ? starts[Math.max(line - 1, 0)] ?? 0 : Math.max(pos - 1, 0)  // ctrl pula linha
+    else if (e.key == "ArrowRight") pos = e.ctrlKey ? starts[line + 1] ?? pos : Math.min(pos + 1, chars.length)
     else return
     e.preventDefault()
     caret()
