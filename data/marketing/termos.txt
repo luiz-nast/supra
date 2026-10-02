@@ -1,0 +1,72 @@
+funil
+topo: atrair, gente que ainda não te conhece
+meio: considerar, já conhece e está comparando
+fundo: decidir, pronto para comprar
+
+TOFU: top of funnel
+MOFU: middle of funnel
+BOFU: bottom of funnel
+
+lead: contato interessado que deixou dado (nome, email, whatsapp)
+MQL: lead qualificado pelo marketing
+SQL: lead qualificado para vendas
+prospect: lead que vendas está trabalhando
+persona: retrato do cliente ideal
+ICP: perfil de cliente ideal (empresa)
+público-alvo: grupo que você quer alcançar
+nicho: público pequeno e específico
+
+CTA: chamada para ação, "compre agora", "fale no whatsapp"
+landing page: página com um objetivo só
+lead magnet: isca grátis em troca do contato
+copy: o texto que vende
+headline: título principal
+gatilho mental: escassez, urgência, prova social, autoridade, reciprocidade
+prova social: depoimentos, avaliações, números de clientes
+oferta: produto + preço + bônus + garantia
+upsell: vender versão maior do que ele já vai comprar
+cross-sell: vender produto complementar
+downsell: oferecer algo menor para quem recusou
+
+tráfego orgânico: visita sem pagar (busca, redes, indicação)
+tráfego pago: visita comprada (anúncios)
+SEO: aparecer no google sem pagar
+SEM: aparecer no google pagando
+palavra-chave: o que a pessoa digita na busca
+remarketing: anunciar de novo para quem já visitou
+pixel: código que rastreia quem visitou e o que fez
+UTM: etiqueta no link para saber de onde veio a visita
+orgânico x pago: tempo x dinheiro
+
+impressões: quantas vezes o anúncio apareceu
+alcance: quantas pessoas diferentes viram
+engajamento: curtidas, comentários, compartilhamentos, salvos
+CTR: cliques / impressões
+CPM: custo por mil impressões
+CPC: custo por clique
+CPL: custo por lead
+CPA: custo por aquisição (venda)
+CAC: custo para conquistar um cliente
+ROI: (ganho - custo) / custo
+ROAS: receita / gasto em anúncio
+taxa de conversão: quem fez a ação / quem viu
+ticket médio: receita / número de vendas
+LTV: quanto um cliente deixa no total
+LTV/CAC: acima de 3 é saudável
+churn: taxa de clientes que cancelam
+MRR: receita recorrente mensal
+KPI: indicador principal que você acompanha
+métrica de vaidade: número bonito que não vira dinheiro
+
+teste A/B: duas versões, fica a que converte mais
+inbound: o cliente vem até você (conteúdo)
+outbound: você vai até o cliente (prospecção)
+marketing de conteúdo: ensinar para atrair
+afiliado: divulga produto dos outros e ganha comissão
+infoproduto: curso, ebook, mentoria
+lançamento: venda concentrada em poucos dias
+perpétuo: venda contínua, todo dia
+branding: como a marca é lembrada
+posicionamento: o lugar que a marca ocupa na cabeça do cliente
+proposta de valor: por que comprar de você e não do outro
+jornada do cliente: caminho do primeiro contato até a compra e depois
