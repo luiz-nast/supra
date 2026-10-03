@@ -6,7 +6,7 @@
 <title>supra</title>
 <style>
   :root { --bg: #323437; --bg2: #2c2e31; --gray: #646669; --text: #d1d0c5; --err: #ca4754; --caret: #e2b714; }
-  body { margin: 0; height: 100vh; overflow: hidden; display: flex; background: var(--bg); color: var(--text); font: 15px/1.6 ui-monospace, monospace; }
+  body { margin: 0; height: 100vh; overflow: hidden; display: flex; background: var(--bg); color: var(--text); font: 18px/1.6 ui-monospace, monospace; }
   button { background: none; border: 0; color: var(--gray); font: inherit; cursor: pointer; }
   button:hover { color: var(--text); }
 
@@ -20,10 +20,12 @@
 
   main { flex: 1; overflow: auto; }
   #bar { position: fixed; top: 8px; right: 16px; color: var(--gray); }
-  #remind { margin: 0; padding: 32px; white-space: pre-wrap; color: var(--gray); font: inherit; }
+  #remind { position: relative; margin: 0; padding: 32px; white-space: pre-wrap; color: var(--gray); font: inherit; }
   #remind .ok { color: var(--text); }
   #remind .err { color: var(--err); }
-  #remind .cur { box-shadow: -2px 0 0 var(--caret); }
+  #caret { position: absolute; width: 2px; border-radius: 1px; background: var(--caret); transition: left .1s, top .1s; }
+  #caret.jump { transition: none; }
+  #wpm { color: var(--caret); margin-right: 12px; }
   #editor { height: 100%; }
   #input { position: fixed; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 
@@ -39,7 +41,7 @@
   <div id="tree"></div>
 </nav>
 <main>
-  <div id="bar"><span id="mode"></span></div>
+  <div id="bar"><span id="wpm"></span><span id="mode"></span></div>
   <pre id="remind"></pre>
   <textarea id="input" autocomplete="off" autocapitalize="off" spellcheck="false"></textarea>
   <div id="editor"></div>
@@ -217,7 +219,10 @@ else {
       "&": { height: "100%", color: "var(--text)", backgroundColor: "var(--bg)" },
       ".cm-scroller": { fontFamily: "inherit" },
       ".cm-gutters": { backgroundColor: "var(--bg)", color: "var(--gray)", border: "none" },
-      ".cm-activeLine, .cm-activeLineGutter": { backgroundColor: "var(--bg2)" },
+      ".cm-activeLineGutter": { backgroundColor: "var(--bg2)" },
+      // linha ativa transparente, senão ela cobre a seleção (o V de 1 linha não aparecia)
+      ".cm-activeLine": { backgroundColor: "#ffffff08" },
+      "&.cm-focused .cm-selectionBackground, .cm-selectionBackground": { backgroundColor: "#4b4e53 !important" },
       ".cm-fat-cursor": { background: "var(--caret) !important", color: "var(--bg) !important" },
     }, { dark: true })],
   })
@@ -239,6 +244,8 @@ else {
   // ---------- modo reminder ----------
   // chars = só os caracteres visíveis; starts = índice do 1º visível de cada linha; words = de cada palavra
   let chars = [], starts = [], words = [], pos = 0
+  const caretEl = document.createElement("i")
+  caretEl.id = "caret"
 
   function remind(text) {
     chars = []; starts = []; words = []; pos = 0
@@ -255,15 +262,24 @@ else {
       s.textContent = c
       chars.push(s)
       return s
-    }))
+    }), caretEl)
+    caretEl.className = "jump"  // ao abrir, o cursor aparece direto, sem deslizar
     caret()
+    caretEl.offsetLeft
+    caretEl.className = ""
   }
 
+  // cursor é uma barrinha só, que desliza (transition no css) até a letra atual
   function caret() {
-    $("#remind .cur")?.classList.remove("cur")
-    chars[pos]?.classList.add("cur")
-    chars[pos]?.scrollIntoView({ block: "nearest" })
+    const s = chars[pos] ?? chars.at(-1)  // no fim do texto fica depois da última letra
+    caretEl.hidden = !s
+    if (!s) return
+    caretEl.style.left = s.offsetLeft + (chars[pos] ? 0 : s.offsetWidth) + "px"
+    caretEl.style.top = s.offsetTop + "px"
+    caretEl.style.height = s.offsetHeight + "px"
+    s.scrollIntoView({ block: "nearest" })
   }
+  addEventListener("resize", caret)
 
   addEventListener("keydown", e => {
     if (focus != "file" || document.body.classList.contains("edit") || (e.ctrlKey && !["Backspace", "ArrowLeft", "ArrowRight"].includes(e.key)) || e.metaKey || e.altKey) return
@@ -286,11 +302,25 @@ else {
   function typed() {
     for (const c of input.value.normalize()) {
       if (/\s/.test(c) || pos >= chars.length) continue
-      chars[pos].className = c.toLowerCase() == chars[pos].textContent.toLowerCase() ? "ok" : "err"  // maiúscula = minúscula
+      const ok = c.toLowerCase() == chars[pos].textContent.toLowerCase()  // maiúscula = minúscula
+      chars[pos].className = ok ? "ok" : "err"
       pos++
+      wpm(ok)
     }
     input.value = ""
     caret()
+  }
+
+  // wpm = (acertos / 5) por minuto; 3s sem digitar zera
+  let start = 0, hits = 0, idle
+  function wpm(ok) {
+    const now = Date.now()
+    start ||= now
+    hits += ok
+    const min = (now - start) / 60000
+    if (min > 1 / 60) $("#wpm").textContent = Math.round(hits / 5 / min) + " wpm"
+    clearTimeout(idle)
+    idle = setTimeout(() => { start = hits = 0; $("#wpm").textContent = "" }, 3000)
   }
   input.addEventListener("input", e => e.isComposing || typed())
   input.addEventListener("compositionend", typed)
