@@ -1,0 +1,38 @@
+docker: roda cada app isolado num container
+imagem: a receita pronta (python, node, alpine...)
+container: a imagem rodando
+dockerfile: arquivo que monta a imagem do teu app
+compose: sobe vários containers descritos num compose.yaml
+volume: pasta da vps ligada a uma pasta do container; os dados não somem
+porta: 127.0.0.1:8083:8000 = vps 8083 -> container 8000, só local
+restart: unless-stopped = religa sozinho, até depois de reiniciar a vps
+env_file: .env = variáveis secretas fora do código
+docker-engine: o serviço que roda os containers
+docker-cli-compose: o plugin do comando docker compose
+containerd: motor por baixo do docker, sobe junto com ele
+
+compose.yaml do supra:
+services:
+  app:
+    build: .
+    ports: ["127.0.0.1:8083:8000"]
+    volumes: ["./data:/app/data"]
+    env_file: .env
+    restart: unless-stopped
+
+docker compose up -d --build
+docker compose up -d
+docker compose down
+docker compose logs -f
+docker compose ps
+docker ps
+docker ps -a
+docker exec -it supra-app-1 sh
+docker images
+docker system df
+docker system prune
+docker inspect -f '{{.HostConfig.RestartPolicy.Name}}' supra-app-1
+
+mudou o código: docker compose up -d --build
+mudou o .env: docker compose up -d
+restart não relê o .env

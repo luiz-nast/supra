@@ -1,0 +1,40 @@
+caddy: servidor web na frente de tudo, porta 80 e 443
+reverse proxy: recebe o domínio e repassa para a porta local do app
+https automático: caddy pede e renova o certificado sozinho (let's encrypt)
+caddyfile: /etc/caddy/Caddyfile, um bloco por domínio
+dns: registro A do subdomínio apontando para o ip da vps
+caddy roda no host, não em container; os apps ficam só em 127.0.0.1
+
+fluxo:
+navegador -> supra.premiumlts.com.br -> caddy :443 -> 127.0.0.1:8083 -> container supra
+
+supra.premiumlts.com.br {
+reverse_proxy 127.0.0.1:8083
+}
+
+site estático:
+loja.premiumlts.com.br {
+root * /root/opala/project/loja/site
+file_server
+encode gzip
+}
+
+portas da vps:
+8080 opala (code-server)
+8081 hellcat-redeye
+8082 hellcat-demon
+8083 supra
+8084 911
+
+caddy validate --config /etc/caddy/Caddyfile
+caddy reload --config /etc/caddy/Caddyfile
+caddy fmt --overwrite /etc/caddy/Caddyfile
+caddy version
+rc-service caddy status
+nslookup supra.premiumlts.com.br
+
+projeto novo:
+1. compose com ports ["127.0.0.1:PORTA:porta-do-app"]
+2. bloco novo no caddyfile
+3. registro A no dns
+4. caddy validate e caddy reload

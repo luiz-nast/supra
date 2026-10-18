@@ -1,0 +1,29 @@
+alpine: linux minúsculo, usado na vps
+shell: sh (ash), não tem bash
+apk: gerenciador de pacotes do alpine
+openrc: sistema que liga e desliga os serviços (no lugar do systemd)
+serviço: programa que roda em segundo plano, tipo docker e caddy
+runlevel: grupo de serviços que sobe junto; boot sobe primeiro, default logo depois
+
+apk update
+apk add docker docker-cli-compose caddy git github-cli curl
+apk info -v | grep docker
+apk del pacote
+
+rc-service docker start
+rc-service docker stop
+rc-service docker restart
+rc-service docker status
+rc-service caddy reload
+
+rc-update add docker default
+rc-update add caddy default
+rc-update del docker default
+rc-update show
+
+o que foi feito depois do reinício da hostinger:
+docker e caddy não estavam em runlevel nenhum, então não subiam sozinhos
+rc-update add docker default
+rc-update add caddy default
+agora a máquina liga, o openrc sobe o docker e o caddy
+o docker religa os containers com restart: unless-stopped
