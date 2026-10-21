@@ -1,0 +1,43 @@
+engines
+llama.cpp
+mlx (lm studio)
+
+lm studio
+ollama
+
+licences:
+mit / apache 2.0 - permisive
+llama - qtd of users
+gemma
+
+quantization float to int
+gguf usually quantaized
+
+* the randomnes acts among
+temperature, high temperature flattens differences
+top_k limits top n tokens
+top_p limits top porcentage (roll of tokens)
+min_p limits bottom porcentage (roll of tokens)
+
+guardrails capcity to load models: strict, relaxed, off
+
+context length: total tokens processed
+gpu offload: work done on the gpu
+flash attention: remember not reprocess previous tokens
+
+lm studio - status: running - use openai sdk
+from openai import OpenAI
+
+ollama
+/set verbose
+/set parameter: top_k top_p temperature num_ctx <context size>
+
+Modelfile
+from <online model> <gguf file>
+parameter <>
+system <message fixed on all chats>
+template """   """
+
+ollama create <> -f Modelfile
+ollama serve - use openai sdk
+from openai import OpenAI; OpenAI(base_url)
